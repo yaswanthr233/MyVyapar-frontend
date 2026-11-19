@@ -103,9 +103,14 @@ const Signup = () => {
                     </div>
                     {error && <p className="signup-error">{error}</p>}
                     <div className="signup-business-previous-submit-container">
-                        <button type="button" className="signup-previous-button" onClick={() => setStep(step - 1)}>Previous</button>
+                        
                         {
-                            isLoading ? renderLoadingSpinner() : <button type="submit" className="signup-button-In-business">Submit</button>
+                            isLoading ? renderLoadingSpinner() : 
+                            
+                            <>
+                                <button type="button" className="signup-previous-button" onClick={() => setStep(step - 1)}>Previous</button>
+                                <button type="submit" className="signup-button-In-business">Submit</button>
+                            </>
                         }
                     </div>
                 </form>
@@ -148,8 +153,10 @@ const Signup = () => {
             <div className="signup-left-container">
                 <div className="signup-logo-container">
                     <img src="https://res.cloudinary.com/duokznlha/image/upload/v1794983943/Sales_Img-removebg-preview_uufxxx.png" alt="Logo" className="logo" />
-                    <h1 className="signup-logo-text">MyVyapar</h1>
+                    <h1 className="signup-logo-text">MyVyapar</h1>  
                 </div>
+                    <p className="login-left-text">Grow Your Business Smarter & Simpler</p>
+                    <p className="login-left-subtext">Manage Billing, Inventory, Customersand Credit - All in One Place</p>
                 <img className="signup-image" src="https://res.cloudinary.com/duokznlha/image/upload/v1794983942/Vector_illustration_for_business__7bac74f7-removebg-preview_eldy18.png" alt="Signup" />
                 
             </div>

@@ -68,6 +68,7 @@
     justify-content: space-between;
     padding: 0 15px;
     box-sizing: border-box;
+    
 }
 
 .login-input{
@@ -143,6 +144,7 @@
 }
 .login-bottom-container{
     height: 60%;
+    animation: fadeIn 0.5s ease-in-out;
 }
 
 .login-form{
@@ -152,6 +154,7 @@
     justify-content: center;
     margin-top: 20px;
     height: 50%;
+    
 }
 .login-signup-container{
     display: flex;
@@ -294,4 +297,17 @@
     .logo-text{
         font-size: 40px;
     }
+}
+
+.email-container{
+    animation: moveIn 0.5s 0.1s ease-in-out forwards;
+}
+
+.password-container{
+    animation: moveIn 0.5s 0.2s ease-in-out forwards;
+}
+
+@keyframes moveIn {
+    from { transform: translateX(60px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
 }

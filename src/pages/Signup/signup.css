@@ -50,6 +50,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    animation: fadeIn 0.5s ease-in-out;
 }
 .signup-create-account-text{
     font-size: 24px;
@@ -97,6 +98,8 @@
     padding: 0 15px;
     box-sizing: border-box;
     margin-bottom: 15px;
+    transform: translateX(40px);
+    
 
 }
 .signup-input{
@@ -168,6 +171,7 @@
     padding: 0 15px;
     box-sizing: border-box;
     margin-bottom: 14px;
+
 }
 
 .business-input{
@@ -223,7 +227,7 @@
 .signup-form{
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: flex-start
 }
 
 .required{
@@ -250,6 +254,12 @@
     color: red;
     font-size: 12px;
     margin-top: 5px;
+}
+
+.loading-spinner{
+    display: flex;
+    align-items: center;
+    width: 100%;
 }
 
 
@@ -283,5 +293,67 @@
     .signup-input{
         width: 90%;
     }
+    .signup-logo-container{
+        margin-bottom: 20px;
+    }
+    .logo{
+        width: 150px;
+        height: 150px;
+    }
+    .signup-logo-text{
+        font-size: 32px;
+        margin-left:-15px;
+        margin-top: 28px;
+    }
+    .login-left-text{
+        font-size: 28px;
+        text-align: center;
+        color: #272b49;
+        margin-top: -40px;
+    }
+    .signup-image{
+        height: 250px;
+        width: 300px;
+        margin-top: -20px;
+    }
+}
 
+.signup-name-container{
+    animation: moveIn 0.5s ease-in-out forwards;
+}
+
+.signup-email-container{
+    animation: moveIn 0.5s  0.1s ease-in-out forwards;
+}
+.signup-phone-container{
+    animation: moveIn 0.5s 0.2s ease-in-out forwards;
+}
+.signup-password-container{
+    animation: moveIn 0.5s 0.3s ease-in-out forwards;
+}
+
+
+.signup-business-name-container{
+    animation: moveIn1 0.5s ease-in-out forwards;
+}
+.signup-business-type-container{
+    animation: moveIn1 0.5s 0.1s ease-in-out forwards;
+}
+.signup-business-address-container{
+    animation: moveIn1 0.5s 0.2s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes moveIn {
+    from { transform: translateX(40px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes moveIn1 {
+    from { transform: translateX(-40px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
 }
