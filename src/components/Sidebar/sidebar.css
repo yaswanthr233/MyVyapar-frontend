@@ -1,0 +1,119 @@
+@media screen and (min-width: 768px){
+    .sidebar{
+        width: 230px;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background-color: #F8FAFC;
+        border-right: 1px solid #e5e5e5;
+    }
+    .sidebar-header{
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        height: 60px;
+        background-color: #ffffff;
+        border-bottom: 1px solid #e5e5e5;
+        width: 100%;
+    }
+    .sidebar-logo{
+        width: 80px;
+        height: 90px;
+    }
+    .sidebar-logo-text{
+        font-size: 24px;
+        font-weight: bold;
+        margin-left: -20px;
+        margin-top: 20px;
+        color: #00205f;
+    }
+    .sidebar-menu{
+        display: flex;
+        flex-direction: column;
+        margin-top: 20px;
+        padding: 0 20px;
+        gap: 10px;
+    }
+
+    .sidebar-menu-link{
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: #00205f;
+        padding: 10px;
+    }
+    .sidebar-menu-text{
+        font-size: 16px;
+        font-weight: 700;
+        color: #00205f;
+        margin-left: 10px;
+        margin-top: 5px;
+    }
+
+    .sidebar-menu-link:hover{
+        background-color: #DBEAFE;
+        border-radius: 15px;
+        color: #1D4ED8;
+    }
+    .sidebar-footer{
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        padding:10px 0;
+        border-top: 1px solid #e5e5e5;
+    }
+
+    .user-name-container{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .user-name-circle{
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #1D4ED8;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .user-name-text{
+        font-size: 12px;
+        font-weight: bold;
+        width: 120px;
+        color: #00205f;
+        margin-left: 10px;
+    }
+
+    .logout-button{
+        display: flex;
+        align-items: center;
+        margin-top: 10px;
+        margin-left: 30px;
+        background-color: transparent;
+        border: none;
+    }
+
+    .logout-button:hover{
+        cursor: pointer;
+        background-color: #DBEAFE;
+        border-radius: 15px;
+        border: none;
+        
+    }
+
+    .logout-text{
+        font-size: 12px;
+        font-weight: bold;
+        color: #00205f;
+        margin-left: 10px;
+    }
+
+
+}

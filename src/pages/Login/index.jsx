@@ -42,6 +42,8 @@ const Login = () => {
                 setError(data.message);
             } else {
                 Cookies.set('token', data.token, { expires: 7 });
+                localStorage.setItem('user', data.user.name);
+                console.log(data.user.name)
                 navigate('/dashboard');
             }
         } catch (error) {
