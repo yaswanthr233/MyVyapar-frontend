@@ -28,7 +28,7 @@ const Sidebar = () => {
                 <h1 className="sidebar-logo-text">MyVyapar</h1>
             </div>
             <div className="sidebar-menu">
-                <Link to="/" className="sidebar-menu-link">
+                <Link to="/dashboard" className="sidebar-menu-link">
                     <AiFillHome color="#00205f" size="20px" />
                     <span className="sidebar-menu-text">Dashboard</span>
                 </Link>
