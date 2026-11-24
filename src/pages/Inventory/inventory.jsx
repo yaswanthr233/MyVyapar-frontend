@@ -42,7 +42,7 @@ const Inventory = () => {
         hsnCode:'',
         productImage:'',
         purchasePrice:0,
-        sellingPrice:'',
+        sellingPrice:0,
         actualPrice:'',
         productDescription:'',
         gstRate:0,
@@ -111,7 +111,7 @@ const Inventory = () => {
             const data = await response.json();
             
             if(response.ok){
-                if(existingProduct.quantity < existingProduct.lowStockAlert){
+                if(Number(existingProduct.quantity) <= 10){
                 changeProducts({
                     products: products.filter(product => product._id !== productId),
                     totalProducts: totalProducts - 1,
@@ -206,6 +206,7 @@ const Inventory = () => {
         e.preventDefault();
         if(!productForm.productName || !productForm.category || !productForm.sku || !productForm.hsnCode || !productForm.purchasePrice || !productForm.sellingPrice || !productForm.quantity || !productForm.unit || !productForm.gstRate ){
             alert('Please fill all required fields');
+            setAddProductLoading(false);
             return;
         }
         try{
@@ -220,7 +221,7 @@ const Inventory = () => {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/products/`, options);
             const data = await response.json();
             if(response.ok){
-                if(productForm.quantity < productForm.lowStockAlert){
+                if(Number(productForm.quantity) <= 10){
                     changeProducts({
                         products: [...products, data.product],
                         totalProducts: totalProducts + 1,
