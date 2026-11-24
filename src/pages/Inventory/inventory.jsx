@@ -15,11 +15,46 @@ import { RiAddCircleFill } from "react-icons/ri";
 import { IoClose } from "react-icons/io5";
 import { RiBox1Line } from "react-icons/ri";
 import { IoCloudUpload } from "react-icons/io5";
-
-
+import ErrorView from '../../components/ErrorView/errorview.jsx';
+import EditPopup from '../../components/EditPopup/editpopup.jsx';
 
 const Inventory = () => {
+    
+    const defaultImage = "https://res.cloudinary.com/duokznlha/image/upload/v1795336423/Eco_Fertilizer_Bag_with_Sprout_and_Granules_hhqo15.png";
+    const {products, changeProducts, totalProducts, lowStockProducts, inStockProducts} = useContext(ProductContext);
+    const [error, setError] = useState(null);
+    const [showEditProductPopup, setShowEditProductPopup] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [showAddProductPopup, setShowAddProductPopup] = useState(false);
+    const [productImage, setProductImage] = useState(null);
+    const [isGstIncluded,setIsGstIncluded] = useState(true)
+    const [isImageUploading, setIsImageUploading] = useState(false);
+    const [addProductLoading, setAddProductLoading] = useState(false);
+    const [imageError, setImageError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [activeMenuId,setActiveMenuId] = useState(null);
+    const filteredProducts = (products ?? []).filter(product => product.productName.toLowerCase().includes(searchTerm.toLowerCase()));
+    const [productForm,setProductForm] = useState({
+        productName:'',
+        category:'',
+        sku:'',
+        hsnCode:'',
+        productImage:'',
+        purchasePrice:0,
+        sellingPrice:'',
+        actualPrice:'',
+        productDescription:'',
+        gstRate:0,
+        unit:'',
+        quantity:0,
+        taxInclusive:isGstIncluded
+    })
+
+
+
     const handleImageUpload = async (e) => {
+    setIsImageUploading(true);
     const file = e.target.files[0];
 
     if (!file) {
@@ -43,7 +78,8 @@ const Inventory = () => {
         const result = await response.json();
 
         if (!response.ok) {
-            throw new Error(result.error?.message || 'Image upload failed');
+            setImageError(result.error?.message || 'Image upload failed');
+            return;
         }
 
         setProductForm(prev => ({
@@ -55,48 +91,71 @@ const Inventory = () => {
     } catch (error) {
         console.error('Image upload error:', error);
     }
-};
-    const defaultImage = "https://res.cloudinary.com/duokznlha/image/upload/v1795336423/Eco_Fertilizer_Bag_with_Sprout_and_Granules_hhqo15.png";
-    const {products, changeProducts, totalProducts, lowStockProducts, inStockProducts} = useContext(ProductContext);
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [showAddProductPopup, setShowAddProductPopup] = useState(false);
-    const [productImage, setProductImage] = useState(null);
-    const [isGstIncluded,setIsGstIncluded] = useState(true)
-    const [productForm,setProductForm] = useState({
-        productName:'',
-        category:'',
-        sku:'',
-        hsnCode:'',
-        productImage:'',
-        purchasePrice:0,
-        sellingPrice:'',
-        productDescription:'',
-        gstRate:0,
-        unit:'',
-        quantity:0,
-        taxInclusive:isGstIncluded
-    })
-    const onDecideFinalPrice = (e) => {
-    const price = Number(e.target.value) || 0;
-
-    setProductForm(prev => ({
-        ...prev,
-        sellingPrice: price
-    }));
+    setIsImageUploading(false);
     };
+    const onDeleteProduct = async (productId) => {
+        setActiveMenuId(null);
+        try{
+            const existingProduct = products.find(product => product._id === productId);
+            if (!existingProduct) {
+                alert('Product not found');
+                return;
+            }
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/products/${productId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Cookie.get('token')}`
+                }
+            });
+            const data = await response.json();
+            
+            if(response.ok){
+                if(existingProduct.quantity < existingProduct.lowStockAlert){
+                changeProducts({
+                    products: products.filter(product => product._id !== productId),
+                    totalProducts: totalProducts - 1,
+                    lowStockProducts: lowStockProducts - 1,
+                    inStockProducts: inStockProducts
+                });
+            } else {
+                changeProducts({
+                    products: products.filter(product => product._id !== productId),
+                    totalProducts: totalProducts - 1,
+                    lowStockProducts: lowStockProducts,
+                    inStockProducts: inStockProducts - 1
+                });
+            }
+            alert(data.message || 'Product deleted successfully');
+            } else {
+                alert(data.message || 'Please Try Again Later');
+            }
+        } catch(err){
+            alert(err.message || 'An error occurred while deleting the product.');
+        }
+    }
     const sellingPrice = Number(productForm.sellingPrice) || 0;
     const gstRate = Number(productForm.gstRate) || 0;
 
     const gstAmount = sellingPrice * gstRate / 100;
+    const finalPrice = isGstIncluded ? sellingPrice : sellingPrice + gstAmount;
+    const onDecideFinalPrice = (e) => {
+        setProductForm(prev => ({
+            ...prev,
+            sellingPrice: e.target.value
+        }));
+    };
 
-    const inclusivePrice = isGstIncluded
-        ? sellingPrice
-        : sellingPrice + gstAmount;
+    const manageEditProduct = (productId) => {
+        setActiveMenuId(null);
+        const productToEdit = products.find(product => product._id === productId);
+        if (productToEdit) {
+            setShowEditProductPopup(true);
+            setSelectedProduct(productToEdit);
+        }
+        return;
+    }
 
-    const exclusivePrice = isGstIncluded
-        ? sellingPrice / (1 + gstRate / 100)
-        : sellingPrice;
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -127,10 +186,27 @@ const Inventory = () => {
         
     },[]);
 
+    const onClickMenuIcon = (productId) => {
+        setActiveMenuId(prevId => prevId === productId ? null : productId);
+    }
+
     const onAddProduct = async (e) => {
+        setAddProductLoading(true);
+        if(imageError){
+            alert(imageError);
+            return;
+        }
+        const actualP = isGstIncluded ? sellingPrice - (sellingPrice * gstRate / 100) : sellingPrice;
+        const productData = {
+            ...productForm,
+            taxInclusive: isGstIncluded,
+            sellingPrice: finalPrice,
+            actualPrice: actualP
+        }
         e.preventDefault();
-        if(!productForm.productName || !productForm.category || !productForm.sku || !productForm.hsnCode || !productForm.purchasePrice || !productForm.sellingPrice || !productForm.quantity || !productForm.unit || !productForm.gstRate){
+        if(!productForm.productName || !productForm.category || !productForm.sku || !productForm.hsnCode || !productForm.purchasePrice || !productForm.sellingPrice || !productForm.quantity || !productForm.unit || !productForm.gstRate ){
             alert('Please fill all required fields');
+            return;
         }
         try{
             const options = {
@@ -139,17 +215,27 @@ const Inventory = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${Cookie.get('token')}`
                 },
-                body: JSON.stringify(productForm)
+                body: JSON.stringify(productData)
             }
             const response = await fetch(`${import.meta.env.VITE_API_URL}/products/`, options);
             const data = await response.json();
             if(response.ok){
-                changeProducts({
-                    products: [...products, data.product],
-                    totalProducts: totalProducts + 1,
-                    lowStockProducts: lowStockProducts,
-                    inStockProducts: inStockProducts
-                });
+                if(productForm.quantity < productForm.lowStockAlert){
+                    changeProducts({
+                        products: [...products, data.product],
+                        totalProducts: totalProducts + 1,
+                        lowStockProducts: lowStockProducts + 1,
+                        inStockProducts: inStockProducts
+                    });
+                } else {
+                    changeProducts({
+                        products: [...products, data.product],
+                        totalProducts: totalProducts + 1,
+                        lowStockProducts: lowStockProducts,
+                        inStockProducts: inStockProducts + 1
+                    });
+                }
+                alert(data.message || 'Product added successfully');
                 setShowAddProductPopup(false);
                 setProductForm({
                     productName:'',
@@ -169,6 +255,8 @@ const Inventory = () => {
             }
         } catch(err){
             alert(err.message || 'An error occurred while adding the product.');
+        } finally {
+            setAddProductLoading(false);
         }
     }
 
@@ -199,7 +287,7 @@ const Inventory = () => {
                     <tbody className="inventory-table-body">
                         {
                             
-                            products.map((product) => 
+                            filteredProducts.map((product) => 
                                 {
                                     return (
                                 <tr className="inventory-table-row" key={product._id}>
@@ -212,11 +300,11 @@ const Inventory = () => {
                                     <td className="inventory-product-text">₹ {product.sellingPrice}</td>
                                     <td className="inventory-product-text">
                                         <div className="inventory-product-actions-container">
-                                            <button className="inventory-product-action-btn edit-btn">
-                                                <MdModeEdit color="#0044cb" size="24px" />
+                                            <button className="inventory-product-action-btn edit-btn" onClick={() => manageEditProduct(product._id)}>
+                                                <MdModeEdit color="#0044cb" size="24px"  />
                                             </button>
-                                            <button className="inventory-product-action-btn delete-btn">
-                                                <MdDelete color="#ff0000" size="24px" />
+                                            <button className="inventory-product-action-btn delete-btn" onClick={() => onDeleteProduct(product._id)}>
+                                                <MdDelete color="#ff0000" size="24px" type="button"  />
                                             </button>
                                         </div>
                                     </td>
@@ -228,8 +316,8 @@ const Inventory = () => {
             </div>
             <ul className="inventory-table-container-small small-devices">
                 {
-                    products.map((product) => {
-                        const stockClass = product.quantity < 10
+                    filteredProducts.map((product) => {
+                        const stockClass = Number (product.quantity) < 10
                             ? "inventory-product-stock-container-small low-stock"
                             : "inventory-product-stock-container-small";
                         return (
@@ -241,13 +329,30 @@ const Inventory = () => {
                                 <p className="inventory-product-text-sellingPrice">₹ {product.sellingPrice}</p>
                             </div>
                             <div className={stockClass}>
-                                <p className={`inventory-product-text-stock ${product.quantity < 10 ? 'warning' : ''}`}>
+                                <p className={`inventory-product-text-stock ${Number(product.quantity) < 10 ? 'warning' : ''}`}>
                                     {product.quantity}
                                 </p>
                             </div>
-                            <button className="inventory-product-action-btn-small ">
-                            <CiMenuKebab color="#000" size="24px" />
+                            <div>
+
+                            <button className="inventory-product-action-btn-small" onClick={() => onClickMenuIcon(product._id)}>
+                                <CiMenuKebab color="#000" size="24px" />
                             </button>
+                            {
+                                activeMenuId === product._id && (
+                                    <div className="inventory-product-actions-active-menu-container-small">
+                                        <button className="inventory-product-actions-active-menu-edit-container" onClick={() => manageEditProduct(product._id)} >
+                                            <MdModeEdit color="#0044cb" size="24px"/>
+                                            <p className="inventory-product-actions-active-menu-text">Edit</p>
+                                        </button>
+                                        <button className="inventory-product-actions-active-menu-delete-container" onClick={() => onDeleteProduct(product._id)}>
+                                            <MdDelete color="#ff0000" size="24px"/>
+                                            <p className="inventory-product-actions-active-menu-text">Delete</p>
+                                        </button>
+                                    </div>
+                                )
+                            }
+                            </div>
                         </li>
                     )})
                 }
@@ -256,19 +361,11 @@ const Inventory = () => {
         )
     }
 
-    const erroView = () => {
-        return (
-            <div className="error-view">
-                <img src="https://res.cloudinary.com/duokznlha/image/upload/v1789262807/ChatGPT_Image_Sep_13_2026_06_56_06_AM_kw7mzh.png" alt="Error" className="error-image" />
-                <p className="error-message">{error}</p>
-            </div>
-        )
-    }
+    
 
     return (
         <>
-        
-        {
+            {
             showAddProductPopup && (
                 <Popup className="add-product-popup" open={showAddProductPopup} onClose={() => setShowAddProductPopup(false)} modal 
                 overlayStyle={{
@@ -418,7 +515,10 @@ const Inventory = () => {
                                     <input type="file" id="productImage" name="productImage" className="add-product-popup-form-input-image-upload" onChange={handleImageUpload} />
                                     </div>
                                     <div>
-                                        <p className="add-product-popup-uploaded-product-image-file small">{productImage ? productImage.name : "No file chosen"}</p>
+                                        {
+                                        isImageUploading ? renderLoadingSpinner() : imageError ? <p className="add-product-popup-uploaded-product-image-file small error">{imageError}</p> : null
+                                        }
+                                        {isImageUploading ? null : <p className="add-product-popup-uploaded-product-image-file small">{productImage ? productImage.name : "No file chosen"}</p>}
                                     </div>
                                 </div>
                             </div>
@@ -446,16 +546,9 @@ const Inventory = () => {
                                 </div>
                             </div>
                             <div className="add-product-popup-form-group-preview">
-                                <label className="add-product-popup-form-label">Price Preview</label>
+                                <label className="add-product-popup-form-label price-preview">Price Preview</label>
                                 <div className="add-product-popup-form-preview-yes-no-container">
-                                    <div>
-                                        <p className="gst-preview-text green">If Yes (GST Inclusive) (Final Price)</p>
-                                        <p className="gst-final-price included-price">₹ {inclusivePrice.toFixed(2)}</p>
-                                    </div>
-                                    <div>
-                                        <p className="gst-preview-text blue">If No (GST Exclusive)</p>
-                                        <p className="gst-final-price exclusive-price">₹ {exclusivePrice.toFixed(2)}</p>
-                                    </div>    
+                                    <h1 className="add-product-popup-form-preview-title-final-price">Final Price: <span className="final-price-preview-text">₹ {finalPrice.toFixed(2)}</span> </h1>   
                                 </div>
                             </div>
                             <div className="add-product-popup-form-group">
@@ -468,12 +561,16 @@ const Inventory = () => {
                                             }}></textarea>
                             </div>
                             <div className="add-product-submit-container">
-                                <button type="submit" >Add Product</button>
+                                {addProductLoading ? renderLoadingSpinner() : <button type="submit" >Add Product</button>
+                                }
                             </div>
                         </div>
                     </form>  
                     </Popup>
                 )
+            }
+            {
+                showEditProductPopup && selectedProduct && <EditPopup product={selectedProduct} onClose={() => setShowEditProductPopup(false)} />
             }
         <div className="inventory-container">
             <div className="inventory-header">
@@ -487,7 +584,7 @@ const Inventory = () => {
                 </button>
             </div>
             {
-            error?erroView():
+            error? <ErrorView error={error} /> :
             <>
             <div className="inventory-status-constainer">
                 <div className="inventory-status-card d-none-small-devices">
@@ -507,7 +604,7 @@ const Inventory = () => {
                     </div>
                     <div className="inventory-status-info">
                         <p className="inventory-status-text">In Stock Products</p>
-                        <p className="inventory-products-detail">{inStockProducts}</p>
+                        <p className="inventory-products-detail">{inStockProducts > 0 ? inStockProducts : 0}</p>
                     </div>
                 </div>
                 <div className="inventory-status-card">
@@ -517,13 +614,13 @@ const Inventory = () => {
                     </div>
                     <div className="inventory-status-info">
                         <p className="inventory-status-text">Low Stock Products</p>
-                        <p className="inventory-products-detail">{lowStockProducts}</p>
+                        <p className="inventory-products-detail">{lowStockProducts > 0 ? lowStockProducts : 0}</p>
                     </div>
                 </div>
             </div>    
             <div className="search-container">
                 <IoSearch color="#000" size="20px" className="search-icon" />
-                <input type="text" placeholder="Search products..." className="search-input" />
+                <input type="text" placeholder="Search products..." className="search-input" onChange={(e) => setSearchTerm(e.target.value)} />
             </div>
             {loading? renderLoadingSpinner() : renderProductsTable()}
             </>
